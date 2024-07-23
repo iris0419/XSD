@@ -1,0 +1,19 @@
+*{
+    margin: 0;
+    padding: 0;
+}
+
+body{
+    display: flex;
+    justify-content: center;
+    padding: 100px 0;
+}
+
+.pagination{
+    margin-top: 24px;
+    float: right;
+}
+
+.mgb24{
+    margin-top: 24px;
+}

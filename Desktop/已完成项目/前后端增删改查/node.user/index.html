@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <!-- Import style -->
+    <link rel="stylesheet" href="//unpkg.com/element-plus/dist/index.css" />
+    <!-- Import Vue 3 -->
+    <script src="//unpkg.com/vue@3"></script>
+    <!-- Import component library -->
+    <script src="//unpkg.com/element-plus"></script>
+
+    <!-- <script type="text/javascript">
+        Vue.config.productionTip = false //阻止vue在启动时生成生产提示
+    </script> -->
+    <link rel="stylesheet" href="./style.css">
+</head>
+
+<body>
+    <div id="app">
+        <h1 class="mgb24">信息录入</h1>
+        <el-form :inline="true" :model="userForm" class="demo-form-inline">
+            <el-form-item label="name">
+                <el-input v-model="userForm.name" />
+            </el-form-item>
+
+            <el-form-item label="age">
+                <el-input v-model="userForm.age" />
+            </el-form-item>
+
+            <el-form-item label="sex">
+                <el-radio-group v-model="userForm.sex">
+                    <el-radio label="male">male</el-radio>
+                    <el-radio label="female">female</el-radio>
+                </el-radio-group>
+            </el-form-item>
+
+            <el-form-item>
+                <el-button type="primary" @click="handelUserAdd">add</el-button>
+                <el-button type="primary" @click="handelUserUpdate">update</el-button>
+            </el-form-item>
+        </el-form>
+        <h1 class="mgb24">信息展示</h1>
+        <el-form :inline="true" :model="searchForm" class="demo-form-inline">
+            <el-form-item label="name">
+                <el-input v-model="searchForm.name" />
+            </el-form-item>
+
+            <!-- 搜索功能 -->
+            <el-button type="primary" @click="handelSearch">search</el-button>
+        </el-form>
+        <!-- 表格展示 -->
+        <el-table class="mgb24" :data="tableData" stripe style="width: 100%">
+            <el-table-column prop="name" label="name" width="180"></el-table-column>
+            <el-table-column prop="age" label="age" width="180"></el-table-column>
+            <el-table-column prop="sex" label="sex" width="180"></el-table-column>
+
+            <!-- 编辑和删除 -->
+            <el-table-column>
+                <template #default="scope">
+                    <el-button size="small" @click="handleEdit(scope.row)">edit</el-button>
+                    <el-button size="small" type='danger' @click="handleDel(scope.row)">delete</el-button>
+                </template>
+            </el-table-column>
+        </el-table>
+        <!-- 分页 -->
+        <el-pagination class='pagination' v-model:current-page="current" background layout="prev, pager, next"
+            :total="total" @current-change="handelCurrentChange"/> 
+    </div>
+</body>
+
+<script>
+    const App = {
+        data() {
+            return {
+                userForm: {
+                    name: '',
+                    sex: '',
+                    age: '',
+                    id: '',//更新4 因为更新的时候获取不到id
+                },
+                searchForm: {
+                    name: ''
+                },
+                tableData: [],
+                current: 1,//分页 1.
+                total: 0,//分页 2.
+            }
+        },
+
+        async mounted() {
+            // const response = await fetch('http://localhost:3000/users')  //这里的地址有下划线
+            // const data = await response.json()
+            // this.tableData = data.users
+            this.fetchList() //调用
+        },
+
+        methods: {
+            //获取列表 ,因为用的比较频繁,所以打包函数方便调用
+            async fetchList() {
+                const {name}=this.searchForm //搜索 1.
+                const response = await fetch(`http://localhost:3000/users?name=${name}&current=${this.current}`)  //搜索 2.
+                const data = await response.json()
+                this.tableData = data.users
+                this.total=data.total
+            },
+
+            //点击add按钮提交表单信息
+            async handelUserAdd() {
+                const response = await fetch('http://localhost:3000/users', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json;charset=utf-8'
+                    },
+                    body: JSON.stringify(this.userForm)
+                })
+                const data = response.data()
+            },
+            //更新 1.
+            async handelUserUpdate() {
+                const response = await fetch(`http://localhost:3000/users/${this.userForm.id}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json;charset=utf-8'
+                    },
+                    body: JSON.stringify(this.userForm)
+                })
+            },
+            handelSearch() {
+                this.fetchList()
+            },
+            //编辑 
+            handleEdit(row) {
+                this.userForm = { ...row } //用解构写法,相当于生成一个新的地址,但是值是row的值
+            },
+            //删除 
+            async handleDel(row) {
+                const response = await fetch(`http://localhost:3000/users/${row.id}`, {
+                    method: 'DELETE',
+                })
+            },
+            handelCurrentChange(val){
+                this.current=val
+                this.fetchList()
+            }
+        },
+    }
+
+    const app = Vue.createApp(App);
+    app.use(ElementPlus)
+    app.mount('#app');
+</script>
+
+</html>
