@@ -30,6 +30,10 @@
           ]
         }
       ]
+    },
+    {
+      "name": "basic",
+      "srcPath": "./AppScope/common/basic"
     }
   ]
 }
